@@ -46,7 +46,7 @@ func TestInsert(t *testing.T) {
 	tree.Insert("teamer")
 
 	expectedTree := RadixTree{false,"t", map[string]*RadixTree{
-		"e": &RadixTree{true,"e", map[string]*RadixTree{
+		"e": &RadixTree{false,"e", map[string]*RadixTree{
 			"s": &RadixTree{true,"st", map[string]*RadixTree{
 				"j": &RadixTree{true,"job", nil},
 				"w": &RadixTree{true,"work", nil},
@@ -77,7 +77,67 @@ func TestInsertRootLevel(t *testing.T) {
 		t.Error("Error!")
 	}
 
-	if !reflect.DeepEqual(*tree.C["a"], RadixTree{false,"amber", nil}) {
+	if !reflect.DeepEqual(*tree.C["a"], RadixTree{true,"amber", nil}) {
 		t.Error("Error!")
+	}
+}
+
+func TestSearch(t *testing.T) {
+	nodes := []string{"test", "team", "amber", "testjob", "testwork", "testart", "testworld"}
+	notLeafNodes := []string{"te", "testwor"}
+	wrongNodes := []string{"focus", "tea", "t", "testj", "a", "am", "testworker", "testworlord"}
+
+	tree := RadixTree{}
+	for _, node := range nodes {
+		tree.Insert(node)
+	}
+
+	for _, node := range nodes {
+		find, _ := tree.Search(node)
+		if find != node {
+			t.Errorf("Not found element: %s", node)
+		}
+	}
+
+	for _, node := range notLeafNodes {
+		find, _ := tree.Search(node)
+		if find != "" {
+			t.Errorf("Found element: %s, but it isn't leaf %s", node, find)
+		}
+	}
+
+	for _, node := range wrongNodes {
+		find, _ := tree.Search(node)
+		if find != "" {
+			t.Errorf("Found element: %s, but it is wrong %s", node, find)
+		}
+	}
+}
+
+func TestLongestPrefix(t *testing.T) {
+	nodes := []string{"test", "team", "amber", "testjob", "testwork", "testart", "testworld"}
+	longestPrefix := map[string]string{
+		"teamer": "team",
+		"testjob": "testjob",
+		"testjobber": "testjob",
+		"teambet": "team",
+		"testing": "test",
+		"test": "test",
+		"testworing": "test",
+		"testworker": "testwork",
+		"testworlord": "test",
+		"tea": "",
+	}
+
+	tree := RadixTree{}
+	for _, node := range nodes {
+		tree.Insert(node)
+	}
+
+	for key, prefix := range longestPrefix {
+		find, _ := tree.LongestPrefix(key)
+		if find != prefix {
+			t.Errorf("Error longest prefix: %s for %s, but found: %s", prefix, key, find)
+		}
 	}
 }

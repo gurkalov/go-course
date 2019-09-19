@@ -47,6 +47,7 @@ func (n *RadixTree) Insert (key string) {
 		commonPrefix, suffNewKey, suffNodeKey := BrokeKey(key, n.Key)
 		if commonPrefix != n.Key {
 			n.Key = suffNodeKey
+			leaf := n.Leaf
 			n.Leaf = false
 
 			newParent := &RadixTree{}
@@ -56,7 +57,7 @@ func (n *RadixTree) Insert (key string) {
 			newParent.C[FirstChar(suffNewKey)].Key = suffNewKey
 			newParent.C[FirstChar(suffNewKey)].Leaf = true
 
-			newParent.C[FirstChar(suffNodeKey)] = &RadixTree{true,n.Key, n.C}
+			newParent.C[FirstChar(suffNodeKey)] = &RadixTree{leaf,n.Key, n.C}
 			n.Key = newParent.Key
 			n.C = newParent.C
 		} else {
@@ -72,4 +73,48 @@ func (n *RadixTree) Insert (key string) {
 			}
 		}
 	}
+}
+
+func (n *RadixTree) Search (key string) (string, bool) {
+	if n.Leaf && n.Key == key {
+		return n.Key, true
+	}
+
+	_, suffNewKey, _ := BrokeKey(key, n.Key)
+	char := FirstChar(suffNewKey)
+
+	if node, ok := n.C[char]; ok {
+		find, ok := node.Search(suffNewKey)
+		if ok {
+			return n.Key + find, true
+		}
+
+		return find, false
+	}
+
+	return "", false
+}
+
+func (n *RadixTree) LongestPrefix (key string) (string, bool) {
+	if n.Leaf && n.Key == key {
+		return n.Key, true
+	}
+
+	commonPrefix, suffNewKey, _ := BrokeKey(key, n.Key)
+	char := FirstChar(suffNewKey)
+
+	if node, ok := n.C[char]; ok {
+		find, ok := node.LongestPrefix(suffNewKey)
+		if ok {
+			return n.Key + find, true
+		} else if n.Leaf {
+			return n.Key, true
+		}
+
+		return find, false
+	}  else if n.Leaf && n.Key == commonPrefix {
+		return n.Key, true
+	}
+
+	return "", false
 }
