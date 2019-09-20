@@ -1,6 +1,8 @@
 package radixtree
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -136,6 +138,34 @@ func TestLongestPrefix(t *testing.T) {
 
 	for key, prefix := range longestPrefix {
 		find, _ := tree.LongestPrefix(key)
+		if find != prefix {
+			t.Errorf("Error longest prefix: %s for %s, but found: %s", prefix, key, find)
+		}
+	}
+}
+
+func TestTldPrefix(t *testing.T) {
+
+	content, _ := ioutil.ReadFile("tld-list-basic.json")
+	var tld []string
+	if err := json.Unmarshal(content, &tld); err != nil {
+		panic(err)
+	}
+
+	tree := RadixTree{}
+	for _, node := range tld {
+		tldNode := Reverse("." + node)
+		tree.Insert(tldNode)
+	}
+
+	longestPrefix := map[string]string{
+		"semrush.com": "moc.",
+		"habrahabr.ru": "ur.",
+		"all.net.download": "daolnwod.",
+	}
+
+	for key, prefix := range longestPrefix {
+		find, _ := tree.LongestPrefix(Reverse(key))
 		if find != prefix {
 			t.Errorf("Error longest prefix: %s for %s, but found: %s", prefix, key, find)
 		}
