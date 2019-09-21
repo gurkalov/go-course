@@ -1,8 +1,8 @@
 package rpn
 
 import (
-	"course/calc"
-	"course/calc/extend"
+	"course/calculator"
+	"course/calculator/extend"
 	"course/stack"
 	"strconv"
 	"strings"
@@ -78,7 +78,7 @@ func ComputeRpn(str string) float64 {
 		} else {
 			a := stack.Pop().(float64)
 			b := stack.Pop().(float64)
-			result = calc.ComputeExtend(extend.Calc{b, a}, v)
+			result = calculator.ComputeExtend(extend.Calc{b, a}, v)
 			stack.Push(result)
 		}
 	}
